@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_dashboard.dart';
 import 'package:food_management_app/features/producer/pages/producer_dashboard.dart';
 import 'package:food_management_app/features/producer/pages/producer_page.dart';
@@ -13,14 +13,8 @@ import 'package:food_management_app/features/user_auth/pages/sign_up_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: kIsWeb
-        ? FirebaseOptions(
-            apiKey: "AIzaSyBFh1OSIzXrTdmm4H_fzQIa1mrF8H3clnc",
-            appId: "1:554788460660:web:798e221c1950fef5f19921",
-            messagingSenderId: "554788460660",
-            projectId: "food-management-app-ff8df",
-          )
-        : null,
+    options: DefaultFirebaseOptions
+        .currentPlatform, // ✅ Use correct Firebase options
   );
 
   runApp(const MyApp());

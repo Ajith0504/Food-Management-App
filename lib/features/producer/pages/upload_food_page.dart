@@ -21,9 +21,8 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  Future<void> _pickImage() async {
-    final XFile? pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.camera);
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedFile = await ImagePicker().pickImage(source: source);
     if (pickedFile != null) {
       setState(() => _selectedImage = File(pickedFile.path));
     }
@@ -92,9 +91,34 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
             _selectedImage != null
                 ? Image.file(_selectedImage!,
                     height: 200, width: double.infinity, fit: BoxFit.cover)
-                : ElevatedButton(
-                    onPressed: _pickImage, child: const Text("Take Picture")),
+                : Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.image,
+                        size: 50, color: Colors.black54),
+                  ),
             const SizedBox(height: 10),
+
+            // Buttons for Camera & Gallery Selection
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _pickImage(ImageSource.camera),
+                  icon: const Icon(Icons.camera),
+                  label: const Text("Camera"),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _pickImage(ImageSource.gallery),
+                  icon: const Icon(Icons.image),
+                  label: const Text("Gallery"),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
             DropdownButtonFormField<String>(
               value: _foodType,
               items: ["Eatable", "Non-Eatable"].map((type) {
@@ -103,11 +127,13 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
               onChanged: (value) => setState(() => _foodType = value!),
               decoration: const InputDecoration(labelText: "Food Type"),
             ),
+
             TextFormField(
               controller: _quantityController,
               decoration: const InputDecoration(labelText: "Quantity"),
               keyboardType: TextInputType.number,
             ),
+
             TextFormField(
               controller: _dateTimeController,
               decoration:
@@ -142,7 +168,9 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
                 }
               },
             ),
+
             const SizedBox(height: 20),
+
             ElevatedButton(
                 onPressed: _uploadFoodDetails, child: const Text("Submit")),
           ],

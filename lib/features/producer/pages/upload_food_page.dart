@@ -22,9 +22,18 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   Future<void> _pickImage(ImageSource source) async {
-    final XFile? pickedFile = await ImagePicker().pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() => _selectedImage = File(pickedFile.path));
+    try {
+      final XFile? pickedFile = await ImagePicker().pickImage(source: source);
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      } else {
+        print("No image selected");
+      }
+    } catch (e) {
+      print("Error picking image: $e");
     }
   }
 

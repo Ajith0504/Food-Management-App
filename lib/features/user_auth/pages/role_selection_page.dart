@@ -21,12 +21,13 @@ class RoleSelectionPage extends StatelessWidget {
               onTap: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProducerDashboard()),
+                  MaterialPageRoute(
+                      builder: (context) => const ProducerDashboard()),
                 );
               },
               child: Container(
-                width: 250,
-                height: 120,
+                width: 300,
+                height: 200,
                 decoration: BoxDecoration(
                   color: Colors.blueAccent,
                   borderRadius: BorderRadius.circular(15),
@@ -55,12 +56,13 @@ class RoleSelectionPage extends StatelessWidget {
               onTap: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const ConsumerDashboard()),
+                  MaterialPageRoute(
+                      builder: (context) => const ConsumerDashboard()),
                 );
               },
               child: Container(
-                width: 250,
-                height: 120,
+                width: 300,
+                height: 200,
                 decoration: BoxDecoration(
                   color: Colors.orangeAccent,
                   borderRadius: BorderRadius.circular(15),

@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:food_management_app/features/consumer/pages/consumer_page.dart';
+import 'package:food_management_app/utils/firestore_setup.dart';
 import 'firebase_options.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_dashboard.dart';
 import 'package:food_management_app/features/producer/pages/producer_dashboard.dart';
@@ -12,12 +14,15 @@ import 'package:food_management_app/features/user_auth/pages/sign_up_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions
-        .currentPlatform, // ✅ Use correct Firebase options
-  );
-
+  await initFirebase();
+  await createFirestoreCollections();
   runApp(const MyApp());
+}
+
+Future<void> initFirebase() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -38,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/upload_food': (context) => UploadFoodPage(),
         '/producer_dashboard': (context) => ProducerDashboard(),
         '/consumer_dashboard': (context) => ConsumerDashboard(),
+        '/consumer_page': (context) => ConsumerPage(),
       },
     );
   }

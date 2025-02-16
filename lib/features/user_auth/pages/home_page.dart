@@ -45,8 +45,7 @@ class HomePage extends StatelessWidget {
                 SizedBox(width: 45.0),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(
-                        context, "/consumer_dashboard");
+                    Navigator.pushReplacementNamed(context, "/consumer_page");
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orangeAccent,

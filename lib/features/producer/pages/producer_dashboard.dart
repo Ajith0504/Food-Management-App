@@ -51,9 +51,6 @@ class _ProducerDashboardState extends State<ProducerDashboard> {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               var foodItem = snapshot.data!.docs[index];
-              // Uint8List bytes = Uint8List.fromList((foodItem["imageUrl"] as List).cast<int>().toList());
-              print("${Uint8List.fromList(List<int>.from(foodItem['imageUrl']))}asadflkamblksgmbv;ldsmvl gbsmdf;lmvlk");
-
               return Card(
                 margin: const EdgeInsets.all(10),
                 elevation: 4,
@@ -63,7 +60,7 @@ class _ProducerDashboardState extends State<ProducerDashboard> {
                 child: ListTile(
                     leading: foodItem["imageUrl"] != null
                     ? Image.memory(
-                        base64Decode(foodItem["imageUrl"]), // Properly cast List<dynamic> to List<int>
+                        foodItem["imageUrl"].bytes, // Properly cast List<dynamic> to List<int>
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,

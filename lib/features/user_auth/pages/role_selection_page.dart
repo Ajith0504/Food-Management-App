@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:food_management_app/features/consumer/pages/request_food.dart';
 import 'package:food_management_app/features/producer/pages/producer_dashboard.dart';
-import 'package:food_management_app/features/consumer/pages/consumer_dashboard.dart';
+import 'package:food_management_app/features/consumer/pages/consumer_page.dart';
 
 class RoleSelectionPage extends StatelessWidget {
   const RoleSelectionPage({super.key});
@@ -56,8 +57,7 @@ class RoleSelectionPage extends StatelessWidget {
               onTap: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const ConsumerDashboard()),
+                  MaterialPageRoute(builder: (context) => ConsumerPage()),
                 );
               },
               child: Container(

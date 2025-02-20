@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_page.dart';
+import 'package:food_management_app/features/consumer/pages/request_food.dart';
 import 'package:food_management_app/utils/firestore_setup.dart';
 import 'firebase_options.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_dashboard.dart';
@@ -42,8 +43,9 @@ class MyApp extends StatelessWidget {
         '/producer_page': (context) => ProducerPage(),
         '/upload_food': (context) => UploadFoodPage(),
         '/producer_dashboard': (context) => ProducerDashboard(),
-        '/consumer_dashboard': (context) => ConsumerDashboard(),
         '/consumer_page': (context) => ConsumerPage(),
+        '/request_food': (context) => RequestFood(),
+        '/consumer_dashboard': (context) => ConsumerDashboard(),
       },
     );
   }

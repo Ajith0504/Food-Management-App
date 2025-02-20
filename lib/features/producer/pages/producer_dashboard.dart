@@ -58,15 +58,15 @@ class _ProducerDashboardState extends State<ProducerDashboard> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
-                    leading: foodItem["imageUrl"] != null
-                    ? Image.memory(
-                        foodItem["imageUrl"].bytes, // Properly cast List<dynamic> to List<int>
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      )
-
-                    : Icon(Icons.image_not_supported, size: 60), 
+                  leading: foodItem["imageUrl"] != null
+                      ? Image.memory(
+                          foodItem["imageUrl"]
+                              .bytes, // Properly cast List<dynamic> to List<int>
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.image_not_supported, size: 60),
                   title: Text("Food Type: ${foodItem["foodType"]}"),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

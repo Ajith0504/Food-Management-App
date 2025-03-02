@@ -21,9 +21,6 @@ class _ProducerDashboardState extends State<ProducerDashboard> {
   Widget build(BuildContext context) {
     User? currentUser = _auth.currentUser;
     print(currentUser!.uid);
-    if (currentUser == null) {
-      return const Center(child: Text("User not logged in"));
-    }
 
     String producerId = currentUser.uid; // ✅ Get Logged-in Producer's ID
 

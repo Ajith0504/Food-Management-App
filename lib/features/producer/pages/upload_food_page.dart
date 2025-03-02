@@ -2,13 +2,17 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class UploadFoodPage extends StatefulWidget {
+  const UploadFoodPage({super.key});
+
   @override
   _UploadFoodPageState createState() => _UploadFoodPageState();
 }
@@ -23,7 +27,7 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -32,78 +36,44 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
 
       if (pickedFile == null) return;
 
-      // if (kIsWeb) {
-        final Uint8List bytes = await pickedFile.readAsBytes();
-        setState(() => _webImage = bytes);
-      // } else {
-        setState(() => _selectedImage = File(pickedFile.path));
-      // }
+      final Uint8List bytes = await pickedFile.readAsBytes();
+      setState(() => _webImage = bytes);
     } catch (e) {
       print("Image selection error: $e");
     }
   }
 
-  Future<String> _uploadImageToFirebase() async {
-    if (_selectedImage == null && _webImage == null) return "";
-
-    try {
-      String userId = _auth.currentUser!.uid;
-      String fileName =
-          "food_images/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg";
-      Reference ref = _storage.ref().child(fileName);
-
-      UploadTask uploadTask;
-      if (kIsWeb) {
-        uploadTask = ref.putData(_webImage!);
-      } else {
-        uploadTask = ref.putFile(_selectedImage!);
-      }
-
-      TaskSnapshot snapshot = await uploadTask;
-      return await snapshot.ref.getDownloadURL();
-    } catch (e) {
-      print("Image Upload Error: $e");
-      return "";
-    }
-  }
-
-  void _uploadFoodDetails() async {
-    if ((_selectedImage == null && _webImage == null) ||
-        _quantityController.text.isEmpty ||
-        _dateTimeController.text.isEmpty) {
+  Future<void> _uploadFoodDetails() async {
+    if (_webImage == null || _quantityController.text.isEmpty || _dateTimeController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Please fill all fields and upload an image")),
+        const SnackBar(content: Text("Please fill all fields and upload an image")),
       );
       return;
     }
 
-    setState(() => _isUploading = true); // Start Loading Indicator
+    setState(() => _isUploading = true);
 
     try {
-      // String imageUrl = await _uploadImageToFirebase();
-      // if (imageUrl.isEmpty) {
-      //   throw "Failed to upload image";
-      // }
-
       String producerId = _auth.currentUser!.uid;
 
       await _firestore.collection("food_uploads").add({
         "producerId": producerId,
         "foodType": _foodType,
-        "quantity": _quantityController.text,
+        "quantity": int.parse(_quantityController.text),
         "dateTimeCooked": _dateTimeController.text,
-        "imageUrl": Blob(_webImage!),
+        "imageBlob": _webImage, // Storing image in blob format
         "status": "Available",
+        "timestamp": FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Food uploaded successfully!")),
       );
 
-      // ✅ Reset fields for a new submission
+      // Notify consumers about the available food
+      _notifyConsumers(int.parse(_quantityController.text), producerId);
+
       setState(() {
-        _selectedImage = null;
         _webImage = null;
         _quantityController.clear();
         _dateTimeController.clear();
@@ -115,7 +85,68 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
         SnackBar(content: Text("Error: $e")),
       );
 
-      setState(() => _isUploading = false); // ✅ Stop Loading Indicator
+      setState(() => _isUploading = false);
+    }
+  }
+
+  Future<void> _notifyConsumers(int availableQuantity, String producerId) async {
+    // Fetch all consumer requests that match the available quantity
+    QuerySnapshot consumerRequests = await _firestore
+        .collection("food_requests")
+        .where("status", isEqualTo: "Pending")
+        .get();
+
+    List<String> matchedConsumerTokens = [];
+
+    for (var doc in consumerRequests.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      int requiredQuantity = data["quantityRequired"];
+      String consumerId = data["consumerId"];
+
+      if (requiredQuantity <= availableQuantity) {
+        // Get the consumer's FCM token
+        DocumentSnapshot consumerDoc = await _firestore.collection("users").doc(consumerId).get();
+        if (consumerDoc.exists) {
+          String? token = consumerDoc["fcmToken"];
+          if (token != null) {
+            matchedConsumerTokens.add(token);
+          }
+        }
+
+        // Update the request status to "Matched"
+        await _firestore.collection("food_requests").doc(doc.id).update({"status": "Matched"});
+      }
+    }
+
+    // Send push notification to matched consumers
+    for (String token in matchedConsumerTokens) {
+      await _sendPushNotification(token, "Food Available!", "A food donation matching your request is available.");
+    }
+  }
+
+  Future<void> _sendPushNotification(String token, String title, String body) async {
+    const String serverKey = "YOUR_FIREBASE_SERVER_KEY";
+
+    try {
+      await http.post(
+        Uri.parse("https://fcm.googleapis.com/fcm/send"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "key=$serverKey",
+        },
+        body: jsonEncode({
+          "to": token,
+          "notification": {
+            "title": title,
+            "body": body,
+          },
+          "data": {
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+          }
+        }),
+      );
+    } catch (e) {
+      print("Error sending push notification: $e");
     }
   }
 
@@ -130,16 +161,12 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
             _webImage != null
                 ? Image.memory(_webImage!,
                     height: 200, width: double.infinity, fit: BoxFit.cover)
-                : _selectedImage != null
-                    ? Image.file(_selectedImage!,
-                        height: 200, width: double.infinity, fit: BoxFit.cover)
-                    : Container(
-                        height: 200,
-                        width: double.infinity,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image,
-                            size: 50, color: Colors.black54),
-                      ),
+                : Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.image, size: 50, color: Colors.black54),
+                  ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -172,8 +199,7 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
             ),
             TextFormField(
               controller: _dateTimeController,
-              decoration:
-                  const InputDecoration(labelText: "Date & Time Cooked"),
+              decoration: const InputDecoration(labelText: "Date & Time Cooked"),
               readOnly: true,
               onTap: () async {
                 DateTime? pickedDate = await showDatePicker(
@@ -207,9 +233,7 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isUploading ? null : _uploadFoodDetails,
-              child: _isUploading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Submit"),
+              child: _isUploading ? const CircularProgressIndicator(color: Colors.white) : const Text("Submit"),
             ),
           ],
         ),

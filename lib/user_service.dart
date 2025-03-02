@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class FirestoreDemo extends StatefulWidget {
+  const FirestoreDemo({super.key});
+
   @override
   _FirestoreDemoState createState() => _FirestoreDemoState();
 }

@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class RequestFood extends StatefulWidget {
+  const RequestFood({super.key});
+
   @override
   _RequestFoodState createState() => _RequestFoodState();
 }

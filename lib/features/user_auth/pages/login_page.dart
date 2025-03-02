@@ -4,6 +4,8 @@ import 'package:food_management_app/features/user_auth/firebase_auth/firebase_au
 import 'package:food_management_app/features/user_auth/pages/sign_up_page.dart';
 import 'package:food_management_app/widgets/form_container_widget.dart';
 import 'package:food_management_app/global/common/toast.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -128,6 +130,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isSignin = true;
     });
+
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
@@ -135,6 +138,9 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill in all fields")),
       );
+      setState(() {
+        _isSignin = false;
+      });
       return;
     }
 
@@ -146,15 +152,50 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       if (user != null) {
+        // ✅ Store FCM Token in Firestore
+        await _storeFCMToken(user.uid);
+
         showToast(message: "User is successfully signedIn");
-        Navigator.pushNamed(context, "/home");
+        Navigator.pushNamed(context, "/home"); // Redirect to Home
       }
     } catch (e) {
       showToast(message: "Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
+      setState(() {
+        _isSignin = false;
+      });
     }
+  }
+
+  Future<void> _storeFCMToken(String userId) async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // ✅ Get FCM Token
+    String? token = await messaging.getToken();
+    print("FCM Token: $token"); // Debugging
+
+    if (token != null) {
+      await firestore.collection("users").doc(userId).set({
+        "fcmToken": token,
+      }, SetOptions(merge: true)); // ✅ Merge instead of overwriting user data
+    }
+  }
+
+  void _listenForTokenRefresh() {
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+      if (userId.isNotEmpty) {
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(userId)
+            .update({
+          "fcmToken": newToken,
+        });
+      }
+    });
   }
 }
 

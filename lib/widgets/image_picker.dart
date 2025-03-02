@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 class ImagePickerWidget extends StatefulWidget {
   final Function(File?) onImageSelected;
 
-  const ImagePickerWidget({Key? key, required this.onImageSelected}) : super(key: key);
+  const ImagePickerWidget({super.key, required this.onImageSelected});
 
   @override
   _ImagePickerWidgetState createState() => _ImagePickerWidgetState();

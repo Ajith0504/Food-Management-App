@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:food_management_app/features/producer/pages/producer_dashboard.dart';
-import 'package:food_management_app/features/producer/pages/upload_food_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProducerPage extends StatelessWidget {

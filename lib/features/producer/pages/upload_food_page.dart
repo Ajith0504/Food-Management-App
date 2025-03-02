@@ -61,7 +61,7 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
         "foodType": _foodType,
         "quantity": int.parse(_quantityController.text),
         "dateTimeCooked": _dateTimeController.text,
-        "imageBlob": _webImage, // Storing image in blob format
+        "imageBlob": _webImage, // Keeping image in blob format
         "status": "Available",
         "timestamp": FieldValue.serverTimestamp(),
       });
@@ -71,7 +71,7 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
       );
 
       // Notify consumers about the available food
-      _notifyConsumers(int.parse(_quantityController.text), producerId);
+      await _notifyConsumers(int.parse(_quantityController.text), producerId);
 
       setState(() {
         _webImage = null;
@@ -90,7 +90,6 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
   }
 
   Future<void> _notifyConsumers(int availableQuantity, String producerId) async {
-    // Fetch all consumer requests that match the available quantity
     QuerySnapshot consumerRequests = await _firestore
         .collection("food_requests")
         .where("status", isEqualTo: "Pending")
@@ -104,7 +103,6 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
       String consumerId = data["consumerId"];
 
       if (requiredQuantity <= availableQuantity) {
-        // Get the consumer's FCM token
         DocumentSnapshot consumerDoc = await _firestore.collection("users").doc(consumerId).get();
         if (consumerDoc.exists) {
           String? token = consumerDoc["fcmToken"];
@@ -113,12 +111,10 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
           }
         }
 
-        // Update the request status to "Matched"
         await _firestore.collection("food_requests").doc(doc.id).update({"status": "Matched"});
       }
     }
 
-    // Send push notification to matched consumers
     for (String token in matchedConsumerTokens) {
       await _sendPushNotification(token, "Food Available!", "A food donation matching your request is available.");
     }
@@ -159,8 +155,7 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
         child: Column(
           children: [
             _webImage != null
-                ? Image.memory(_webImage!,
-                    height: 200, width: double.infinity, fit: BoxFit.cover)
+                ? Image.memory(_webImage!, height: 200, width: double.infinity, fit: BoxFit.cover)
                 : Container(
                     height: 200,
                     width: double.infinity,
@@ -192,44 +187,8 @@ class _UploadFoodPageState extends State<UploadFoodPage> {
               onChanged: (value) => setState(() => _foodType = value!),
               decoration: const InputDecoration(labelText: "Food Type"),
             ),
-            TextFormField(
-              controller: _quantityController,
-              decoration: const InputDecoration(labelText: "Quantity"),
-              keyboardType: TextInputType.number,
-            ),
-            TextFormField(
-              controller: _dateTimeController,
-              decoration: const InputDecoration(labelText: "Date & Time Cooked"),
-              readOnly: true,
-              onTap: () async {
-                DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime.now(),
-                );
-
-                if (pickedDate != null) {
-                  TimeOfDay? pickedTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-
-                  if (pickedTime != null) {
-                    setState(() {
-                      _dateTimeController.text =
-                          DateFormat('yyyy-MM-dd HH:mm').format(DateTime(
-                        pickedDate.year,
-                        pickedDate.month,
-                        pickedDate.day,
-                        pickedTime.hour,
-                        pickedTime.minute,
-                      ));
-                    });
-                  }
-                }
-              },
-            ),
+            TextFormField(controller: _quantityController, decoration: const InputDecoration(labelText: "Quantity"), keyboardType: TextInputType.number),
+            TextFormField(controller: _dateTimeController, decoration: const InputDecoration(labelText: "Date & Time Cooked"), readOnly: true),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isUploading ? null : _uploadFoodDetails,

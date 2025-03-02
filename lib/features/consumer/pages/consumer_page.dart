@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_dashboard.dart';
+import 'package:food_management_app/features/user_auth/pages/notification_screen.dart';
 
 class ConsumerPage extends StatelessWidget {
   const ConsumerPage({super.key});
@@ -12,6 +13,20 @@ class ConsumerPage extends StatelessWidget {
         title: const Text("Consumer"),
         backgroundColor: Colors.green[700],
         centerTitle: true,
+        // actions: [
+        //   // Add actions for the AppBar (Right-side icons)
+        //   // IconButton(
+        //   //   icon: Icon(Icons.notifications), // Notification Icon
+        //   //   onPressed: () {
+        //   //     Navigator.push(
+        //   //       context,
+        //   //       MaterialPageRoute(
+        //   //           builder: (context) =>
+        //   //               NotificationScreen()), // Navigate to Notification Page
+        //   //     );
+        //   //   },
+        //   // ),
+        // ],
       ),
       body: Stack(
         children: [
@@ -61,7 +76,8 @@ class ConsumerPage extends StatelessWidget {
                 const SizedBox(height: 15),
 
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, "/request_food"),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, "/request_food"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange[700],
                     foregroundColor: Colors.white,
@@ -71,8 +87,8 @@ class ConsumerPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child:
-                      const Text("Request Food", style: TextStyle(fontSize: 18)),
+                  child: const Text("Request Food",
+                      style: TextStyle(fontSize: 18)),
                 ),
                 const SizedBox(height: 15),
 
@@ -91,6 +107,17 @@ class ConsumerPage extends StatelessWidget {
                     ),
                   ),
                   child: const Text("Sign Out", style: TextStyle(fontSize: 18)),
+                ),
+                IconButton(
+                  icon: Icon(Icons.notifications), // Notification Icon
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              NotificationScreen()), // Navigate to Notification Page
+                    );
+                  },
                 ),
               ],
             ),

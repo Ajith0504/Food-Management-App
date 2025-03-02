@@ -13,39 +13,68 @@ class _RequestFoodState extends State<RequestFood> {
   final TextEditingController _quantityController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isSubmitting = false; // ✅ Tracks request state
+  bool _isSubmitting = false;
 
   void _submitRequest() async {
-    if (_quantityController.text.isEmpty) {
+    String input = _quantityController.text.trim();
+    if (input.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter the required quantity")),
       );
       return;
     }
 
-    setState(() => _isSubmitting = true); // ✅ Disable button while submitting
+    int? quantity;
+    try {
+      quantity = int.parse(input);
+      if (quantity <= 0) throw FormatException();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid positive number")),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
 
     try {
       String consumerId = _auth.currentUser!.uid;
 
       await _firestore.collection("food_requests").add({
         "consumerId": consumerId,
-        "quantityRequired": int.parse(_quantityController.text),
+        "quantityRequired": quantity,
         "status": "Pending",
-        "timestamp": FieldValue.serverTimestamp(), // ✅ Tracks request time
+        "timestamp": FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Request submitted successfully!")),
       );
 
-      _quantityController.clear(); // ✅ Clear input field after submission
+      _quantityController.clear();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: ${e.toString()}")),
       );
     } finally {
-      setState(() => _isSubmitting = false); // ✅ Re-enable button
+      setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> checkForMatches(String producerUid, String foodName, int quantity) async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection("food_requests")
+        .where("quantityRequired", isLessThanOrEqualTo: quantity)
+        .where("status", isEqualTo: "Pending")
+        .get();
+
+    for (var doc in querySnapshot.docs) {
+      await _firestore.collection("food_requests").doc(doc.id).update({
+        "status": "Matched",
+        "matchedWith": producerUid,
+      });
+
+      // Send notification logic here (FCM can be integrated)
     }
   }
 
@@ -63,8 +92,7 @@ class _RequestFoodState extends State<RequestFood> {
         children: [
           Center(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -83,16 +111,14 @@ class _RequestFoodState extends State<RequestFood> {
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: "Quantity (in servings)",
-                      prefixIcon:
-                          const Icon(Icons.fastfood, color: Colors.green),
+                      prefixIcon: const Icon(Icons.fastfood, color: Colors.green),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 20),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -101,8 +127,7 @@ class _RequestFoodState extends State<RequestFood> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[700],
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 15),
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -110,8 +135,7 @@ class _RequestFoodState extends State<RequestFood> {
                     ),
                     child: _isSubmitting
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Submit Request",
-                            style: TextStyle(fontSize: 18)),
+                        : const Text("Submit Request", style: TextStyle(fontSize: 18)),
                   ),
                 ],
               ),

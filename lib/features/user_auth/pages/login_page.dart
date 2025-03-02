@@ -22,6 +22,12 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _listenForTokenRefresh(); // ✅ Listen for token changes
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -49,25 +55,19 @@ class _LoginPageState extends State<LoginPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(
-                height: 30,
-              ),
+              SizedBox(height: 30),
               FormContainerWidget(
                 controller: _emailController,
                 hintText: "Email",
                 isPasswordField: false,
               ),
-              SizedBox(
-                height: 10.0,
-              ),
+              SizedBox(height: 10.0),
               FormContainerWidget(
                 controller: _passwordController,
                 hintText: "Password",
                 isPasswordField: true,
               ),
-              SizedBox(
-                height: 30.0,
-              ),
+              SizedBox(height: 30.0),
               GestureDetector(
                 onTap: _signIn,
                 child: Container(
@@ -79,9 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: Center(
                     child: _isSignin
-                        ? CircularProgressIndicator(
-                            color: Colors.white,
-                          )
+                        ? CircularProgressIndicator(color: Colors.white)
                         : Text(
                             'Login',
                             style: TextStyle(
@@ -92,22 +90,19 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: 20.0,
-              ),
+              SizedBox(height: 20.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("Don't have an account?"),
-                  SizedBox(
-                    width: 5.0,
-                  ),
+                  SizedBox(width: 5.0),
                   GestureDetector(
                     onTap: () {
                       Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => SignUpPage()),
-                          (route) => false);
+                        context,
+                        MaterialPageRoute(builder: (context) => SignUpPage()),
+                        (route) => false,
+                      );
                     },
                     child: Text(
                       'Sign Up',
@@ -155,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
         // ✅ Store FCM Token in Firestore
         await _storeFCMToken(user.uid);
 
-        showToast(message: "User is successfully signedIn");
+        showToast(message: "User successfully signed in");
         Navigator.pushNamed(context, "/home"); // Redirect to Home
       }
     } catch (e) {
@@ -169,36 +164,35 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // ✅ Store FCM Token if it's new
   Future<void> _storeFCMToken(String userId) async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // ✅ Get FCM Token
     String? token = await messaging.getToken();
     print("FCM Token: $token"); // Debugging
 
     if (token != null) {
-      await firestore.collection("users").doc(userId).set({
-        "fcmToken": token,
-      }, SetOptions(merge: true)); // ✅ Merge instead of overwriting user data
+      DocumentSnapshot userDoc = await firestore.collection("users").doc(userId).get();
+      String? existingToken = userDoc.exists ? userDoc["fcmToken"] : null;
+
+      if (existingToken != token) { // ✅ Store only if the token is new
+        await firestore.collection("users").doc(userId).set({
+          "fcmToken": token,
+        }, SetOptions(merge: true));
+      }
     }
   }
 
+  // ✅ Listen for Token Refresh and Update Firestore
   void _listenForTokenRefresh() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
       String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
       if (userId.isNotEmpty) {
-        await FirebaseFirestore.instance
-            .collection("users")
-            .doc(userId)
-            .update({
+        await FirebaseFirestore.instance.collection("users").doc(userId).update({
           "fcmToken": newToken,
         });
       }
     });
   }
 }
-
-// ajithcharan123@gmail.com
-// 123456
-// abc@gmail.com

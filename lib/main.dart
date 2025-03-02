@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_page.dart';
 import 'package:food_management_app/features/consumer/pages/request_food.dart';
+import 'package:food_management_app/services/firebase_notification_service.dart';
 import 'package:food_management_app/utils/firestore_setup.dart';
 import 'firebase_options.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_dashboard.dart';
@@ -28,6 +29,8 @@ void main() async {
   }
 
   _listenForTokenRefresh(); // ✅ Listen for FCM token updates
+
+   FirebaseNotificationService().initNotifications(); 
 
   setupFirebaseMessaging();
 

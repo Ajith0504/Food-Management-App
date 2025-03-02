@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_management_app/features/producer/pages/producer_dashboard.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:food_management_app/features/user_auth/pages/notification_screen.dart';
 
 class ProducerPage extends StatelessWidget {
   const ProducerPage({super.key});
@@ -12,6 +13,20 @@ class ProducerPage extends StatelessWidget {
         title: const Text("Producer"),
         backgroundColor: Colors.green[700],
         centerTitle: true,
+        // actions: [
+        //   // Add actions for the AppBar (Right-side icons)
+        //   IconButton(
+        //     icon: Icon(Icons.notifications), // Notification Icon
+        //     onPressed: () {
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(
+        //             builder: (context) =>
+        //                 NotificationScreen()), // Navigate to Notification Page
+        //       );
+        //     },
+        //   ),
+        // ],
       ),
       body: Stack(
         children: [
@@ -91,6 +106,17 @@ class ProducerPage extends StatelessWidget {
                     ),
                   ),
                   child: const Text("Sign Out", style: TextStyle(fontSize: 18)),
+                ),
+                IconButton(
+                  icon: Icon(Icons.notifications), // Notification Icon
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              NotificationScreen()), // Navigate to Notification Page
+                    );
+                  },
                 ),
               ],
             ),

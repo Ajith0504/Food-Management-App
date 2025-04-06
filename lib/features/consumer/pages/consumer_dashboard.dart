@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -133,8 +132,8 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                     children: [
                       if (requestData["status"] == "Matched")
                         ElevatedButton(
-                          onPressed: () =>
-                              _acceptFood(request.id, requestData["producerId"]),
+                          onPressed: () => _acceptFood(
+                              request.id, requestData["producerId"]),
                           child: const Text("Accept"),
                         ),
                       IconButton(
@@ -184,7 +183,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
   // ✅ Function to send notification to Producer
   Future<void> _sendNotificationToProducer(String producerFcmToken) async {
     const String serverKey =
-        "YOUR_FIREBASE_SERVER_KEY"; // Replace with your actual server key
+        "AIzaSyBFh1OSIzXrTdmm4H_fzQIa1mrF8H3clnc"; // Replace with your actual server key
 
     var url = Uri.parse("https://fcm.googleapis.com/fcm/send");
 

@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:food_management_app/services/firebase_notification_service.dart';
 
 class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({super.key});
+
   @override
   _NotificationScreenState createState() => _NotificationScreenState();
 }
@@ -58,7 +60,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     });
 
     // sendPushNotification(producerUid, "Food Accepted", "Your food has been accepted by a consumer.");
-    FirebaseNotificationService Notify = new FirebaseNotificationService();
+    FirebaseNotificationService Notify = FirebaseNotificationService();
     Notify.sendPushNotification(producerUid, "Food Accepted",
         "Your food has been accepted by a consumer.");
   }

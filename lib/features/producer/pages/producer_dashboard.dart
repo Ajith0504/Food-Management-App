@@ -1,10 +1,8 @@
-import 'dart:convert';
 // import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:typed_data';
 
 class ProducerDashboard extends StatefulWidget {
   const ProducerDashboard({super.key});

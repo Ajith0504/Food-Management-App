@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:food_management_app/features/consumer/pages/consumer_page.dart';
 import 'package:food_management_app/features/consumer/pages/request_food.dart';
+import 'package:food_management_app/features/user_auth/pages/food_list_page.dart';
 import 'package:food_management_app/services/firebase_notification_service.dart';
 import 'package:food_management_app/utils/firestore_setup.dart';
 import 'firebase_options.dart';
@@ -125,6 +126,7 @@ class MyApp extends StatelessWidget {
         '/consumer_page': (context) => ConsumerPage(),
         '/request_food': (context) => RequestFood(),
         '/consumer_dashboard': (context) => ConsumerDashboard(),
+        '/food_list': (context) => FoodListPage(),
       },
     );
   }

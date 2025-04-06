@@ -39,7 +39,8 @@ class FirebaseNotificationService {
       priority: Priority.high,
     );
 
-    var generalNotificationDetails = NotificationDetails(android: androidDetails);
+    var generalNotificationDetails =
+        NotificationDetails(android: androidDetails);
 
     await _flutterLocalNotificationsPlugin.show(
       0,
@@ -49,8 +50,10 @@ class FirebaseNotificationService {
     );
   }
 
-  Future<void> sendPushNotification(String userId, String title, String body) async {
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+  Future<void> sendPushNotification(
+      String userId, String title, String body) async {
+    final userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
     final fcmToken = userDoc['fcm_token'];
 
     if (fcmToken != null) {
@@ -58,7 +61,8 @@ class FirebaseNotificationService {
         Uri.parse('https://fcm.googleapis.com/fcm/send'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'key=YOUR_SERVER_KEY', // Replace with Firebase Server Key
+          'Authorization':
+              'key=AIzaSyBFh1OSIzXrTdmm4H_fzQIa1mrF8H3clnc', // Replace with Firebase Server Key
         },
         body: jsonEncode({
           'to': fcmToken,
